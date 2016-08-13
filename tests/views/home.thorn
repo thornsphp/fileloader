@@ -1,0 +1,8 @@
+html
+    head
+        title Test
+    body
+        h1 Test
+        ul.categories
+            {% for category in categories %}
+                li {{ category }}

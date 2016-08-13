@@ -1,5 +1,7 @@
 <?php
 namespace Thorns\Fileloader;
+use Thorns\Fileloader\Exception\FileNotFoundException;
+use Thorns\Fileloader\Exception\IOException;
 
 /**
  * ------------------------------------------------------------
@@ -9,6 +11,8 @@ namespace Thorns\Fileloader;
  * @author Luke Watts <luke@affinity4.ie>
  * @since 0.0.1
  *
+ * @version 0.0.1
+ *
  * @package Thorns\Fileloader
  */
 class Fileloader
@@ -16,17 +20,17 @@ class Fileloader
     /**
      * @var string
      */
-    public $views_path;
+    private $views_path;
     
     /**
      * @var string
      */
-    public $view_file;
+    private $view_file;
     
     /**
      * @var string
      */
-    public $view_contents;
+    private $view_contents;
     
     /**
      * ------------------------------------------------------------
@@ -42,12 +46,76 @@ class Fileloader
     {
         $this->setViewsPath($views_path);
     }
-    
+
+    /**
+     * ------------------------------------------------------------
+     * View File Contents
+     * ------------------------------------------------------------
+     * 
+     * Returns the Contents of the view passed in by name.
+     * 
+     * @author Luke Watts <luke@affinity4.ie>
+     * @since 0.0.1
+     *
+     * @param $view_name
+     * @return string
+     */
+    public function viewFileContents($view_name)
+    {
+        $this->viewFile($view_name)->viewContents();
+
+        return $this->getViewContents();
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * View Contents
+     * ------------------------------------------------------------
+     * 
+     * Sets the Fileloader::view_contents property using the
+     * setViewContents() method based on the current value
+     * of Fileloader::view_file
+     * 
+     * @author Luke Watts <luke@affinity4.ie>
+     * @since 0.0.1
+     *
+     * @throws \Exception
+     */
+    public function viewContents()
+    {
+        if ($this->getViewFile() !== null) {
+            if (stream_is_local($this->getViewsPath()) && !@readfile($this->getViewFile()))
+                throw new FileNotFoundException(sprintf('No such view `%s`', $this->getViewFile()));
+
+            $this->setViewContents(file_get_contents($this->getViewFile()));
+        } else {
+            throw new IOException('Fileloader::view_file property not yet set.');
+
+            return false;
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * View File
+     * ------------------------------------------------------------
+     *
+     * Prepend the Fieloader::view_file property with path and
+     * appends .thorn extension
+     *
+     * @author Luke Watts <luke@affinity4.ie>
+     * @since 0.0.1
+     *
+     * @param $view_name
+     * @return $this
+     */
     public function viewFile($view_name)
     {
         $this->setViewFile($view_name);
-        
-        return sprintf('%s/%s.thorn', $this->getViewsPath(), $this->getViewFile());
+
+        $this->setViewFile(sprintf('%s/%s.thorn', $this->getViewsPath(), $this->getViewFile()));
+
+        return $this;
     }
     
     /**

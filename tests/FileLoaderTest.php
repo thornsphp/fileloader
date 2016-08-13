@@ -18,7 +18,7 @@ class FileLoaderTest extends \PHPUnit_Framework_TestCase
     /**
      * @var string
      */
-    public $root_path;
+    public $tests_path;
     
     /**
      * @var string
@@ -39,10 +39,56 @@ class FileLoaderTest extends \PHPUnit_Framework_TestCase
      */
     public function __construct()
     {
-        $this->root_path = dirname(__DIR__);
-        $this->views_path = $this->root_path . '/views';
+        $this->tests_path = __DIR__;
+        $this->views_path = $this->tests_path . '/views';
         
         $this->fileloader = new Fileloader($this->views_path);
+    }
+
+    /**
+     * @expectedException \Thorns\Fileloader\Exception\FileNotFoundException
+     */
+    public function testFileNotFoundExceptionIsThrown()
+    {
+        $this->fileloader->viewFileContents('no-file');
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * Test View File Contents
+     * ------------------------------------------------------------
+     * 
+     * Tests Fileloader::viewFileConents() method works as expected
+     * 
+     * @author Luke Watts <luke@affinity4.ie>
+     * @since 0.0.1
+     *
+     */
+    public function testViewFileContents()
+    {
+        $view_contents = file_get_contents($this->views_path . '/home.thorn');
+
+        $this->assertEquals($this->fileloader->viewFileContents('home'), $view_contents);
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * Test View Contents
+     * ------------------------------------------------------------
+     * 
+     * Test Fileloader::viewContents method works as expected
+     * 
+     * @author Luke Watts <luke@affinity4.ie>
+     * @since 0.0.1
+     *
+     */
+    public function testViewContents()
+    {
+        $view_contents = file_get_contents($this->views_path . '/home.thorn');
+
+        $this->fileloader->viewFile('home')->viewContents();
+
+        $this->assertEquals($this->fileloader->getViewContents(), $view_contents);
     }
     
     /**
@@ -59,8 +105,10 @@ class FileLoaderTest extends \PHPUnit_Framework_TestCase
     public function testViewFile()
     {
         $view_name = 'home';
-        
-        $this->assertEquals($this->fileloader->viewFile($view_name), sprintf('%s/%s.thorn', $this->views_path, $view_name));
+
+        $this->fileloader->viewFile($view_name);
+
+        $this->assertEquals($this->fileloader->getViewFile(), sprintf('%s/%s.thorn', $this->views_path, $view_name));
     }
     
     /**
